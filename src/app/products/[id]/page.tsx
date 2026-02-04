@@ -3,6 +3,7 @@ import { getServerSupabase } from "@/lib/supabaseServer";
 import Image from "next/image";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
+import Badge from "@/components/ui/Badge";
 import Rating from "@/components/ui/Rating";
 import { addToCart } from "@/actions/cart";
 import ReviewForm from "@/components/reviews/ReviewForm";
@@ -78,7 +79,6 @@ export default async function ProductDetailPage({ params }: Params) {
         category: data.category ?? "",
         category_id: Number(data.category_id) || 0,
         product_type_id: Number(data.product_type_id) || 0,
-
         description: data.description ?? "",
         ingredients: Array.isArray(data.ingredients) ? data.ingredients : [],
         skin_type: Array.isArray(data.skin_type) ? data.skin_type : [],
@@ -100,63 +100,94 @@ export default async function ProductDetailPage({ params }: Params) {
   const hasRating = Number.isFinite(ratingVal);
 
   return (
-    <section className="py-12 sm:py-16">
+    <section className="py-12 sm:py-20 lg:py-24 bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-8 lg:grid-cols-2">
-          <Card className="overflow-hidden">
-            <div className="relative aspect-square bg-brand-secondary">
-              {product.image ? (
-                <Image src={product.image as string} alt={product.name} fill className="object-cover" />
-              ) : (
-                <div className="h-full w-full" />
+        <div className="lg:grid lg:grid-cols-2 lg:gap-16 items-start">
+          {/* Image Section */}
+          <div className="relative rounded-3xl overflow-hidden bg-neutral-50 aspect-square shadow-sm">
+            {product.image ? (
+              <Image src={product.image as string} alt={product.name} fill className="object-cover" priority />
+            ) : (
+              <div className="h-full w-full flex items-center justify-center text-neutral-300">No Image</div>
+            )}
+          </div>
+
+          {/* Details Section */}
+          <div className="mt-10 lg:mt-0">
+            <h1 className="text-3xl font-bold tracking-tight text-brand-dark sm:text-4xl">{product.name}</h1>
+
+            <div className="mt-4 flex items-center justify-between">
+              <p className="text-2xl font-semibold text-brand-dark">{formatRp(Number(product.price) || 0)}</p>
+              {hasRating ? <Rating value={ratingVal} /> : null}
+            </div>
+
+            <div className="mt-6 space-y-6">
+              <p className="text-base text-brand-light leading-relaxed">{product.description}</p>
+
+              <div className="border-t border-neutral-100 pt-6">
+                <h3 className="text-sm font-semibold text-brand-dark">Key Ingredients</h3>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {ingredients.length > 0 ? (
+                    ingredients.map((ing, i) => (
+                      <Badge key={i} variant="outline" className="bg-white">{ing}</Badge>
+                    ))
+                  ) : (
+                    <span className="text-sm text-brand-light">N/A</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6 pt-2">
+                <div>
+                  <h3 className="text-sm font-semibold text-brand-dark">Skin Type</h3>
+                  <p className="mt-2 text-sm text-brand-light">{skinTypeText || "All"}</p>
+                </div>
+                {product.size && (
+                  <div>
+                    <h3 className="text-sm font-semibold text-brand-dark">Size</h3>
+                    <p className="mt-2 text-sm text-brand-light">{product.size}</p>
+                  </div>
+                )}
+              </div>
+
+              {product.how_to_use && (
+                <div className="pt-2">
+                  <h3 className="text-sm font-semibold text-brand-dark">How to use</h3>
+                  <p className="mt-2 text-sm text-brand-light text-pretty">{product.how_to_use}</p>
+                </div>
               )}
             </div>
-          </Card>
-          <div>
-            <div className="text-3xl font-semibold text-brand-dark">{product.name}</div>
-            <div className="mt-2 text-brand-dark">{formatRp(Number(product.price) || 0)}</div>
-            {hasRating ? <Rating className="mt-3" value={ratingVal} /> : null}
-            <div className="mt-4 text-sm text-brand-light">{product.description}</div>
-            <div className="mt-6">
-              <div className="text-sm font-semibold text-brand-dark">Ingredients</div>
-              <div className="mt-2 text-sm text-brand-light">{ingredients.join(", ") || "N/A"}</div>
-            </div>
-            <div className="mt-6">
-              <div className="text-sm font-semibold text-brand-dark">Skin Type</div>
-              <div className="mt-2 text-sm text-brand-light">{skinTypeText || "All"}</div>
-            </div>
-            {product.how_to_use ? (
-              <div className="mt-6">
-                <div className="text-sm font-semibold text-brand-dark">How to use</div>
-                <div className="mt-2 text-sm text-brand-light">{product.how_to_use}</div>
-              </div>
-            ) : null}
-            {product.size ? (
-              <div className="mt-6">
-                <div className="text-sm font-semibold text-brand-dark">Size</div>
-                <div className="mt-2 text-sm text-brand-light">{product.size}</div>
-              </div>
-            ) : null}
-            <div className="mt-8 flex items-center gap-3">
-              <form action={addToCart}>
+
+            <div className="mt-10 max-w-lg">
+              <form action={addToCart} className="w-full">
                 <input type="hidden" name="productId" value={product.id} />
                 <input type="hidden" name="qty" value={1} />
-                <Button type="submit">Add to Cart</Button>
+                <Button type="submit" className="w-full text-lg py-4">Add to Cart</Button>
               </form>
             </div>
           </div>
         </div>
-        <div className="mt-10 grid gap-6 lg:grid-cols-2">
-          <Card className="p-6 space-y-4">
-            <div className="text-lg font-semibold text-brand-dark">Write a review</div>
-            <ReviewForm productId={product.id} userId={user?.id} />
-          </Card>
-          <Card className="p-6 space-y-4 lg:col-span-2">
-            <div className="text-lg font-semibold text-brand-dark">Customer Reviews</div>
-            <Suspense fallback={<div className="text-sm text-brand-light">Loading reviews…</div>}>
-              <ReviewList productId={product.id} />
-            </Suspense>
-          </Card>
+
+        {/* Reviews Section */}
+        <div className="mt-20 lg:mt-28">
+          <div className="grid gap-10 lg:grid-cols-12">
+            <div className="lg:col-span-4 space-y-6">
+              <h2 className="text-2xl font-bold text-brand-dark">Customer Reviews</h2>
+              <p className="text-brand-light">Share your experience with this product.</p>
+              <Card className="p-6 border-0 shadow-lg shadow-neutral-100">
+                <h3 className="text-lg font-semibold text-brand-dark mb-4">Write a review</h3>
+                <ReviewForm productId={product.id} userId={user?.id} />
+              </Card>
+            </div>
+
+            <div className="lg:col-span-8">
+              <Card className="p-6 sm:p-8 min-h-[300px] border-0 shadow-sm">
+                <Suspense fallback={<div className="text-sm text-brand-light">Loading reviews…</div>}>
+                  <ReviewList productId={product.id} />
+                </Suspense>
+              </Card>
+            </div>
+          </div>
         </div>
       </div>
     </section>

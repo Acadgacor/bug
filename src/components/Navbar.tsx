@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { User } from "@supabase/supabase-js";
 import { useCartStore } from "@/store/cartStore";
 
@@ -12,10 +12,10 @@ const NAV_ITEMS = [
   { label: "AI Chat", href: "/Ai" },
 ];
 
-const LINK_CLASSES = "text-sm font-medium text-brand-light hover:text-brand-dark";
-const MOBILE_LINK_CLASSES = "rounded-full px-4 py-2 text-sm font-medium text-brand-light hover:bg-brand-secondary";
-const ICON_BUTTON_CLASSES = "hidden md:flex h-9 w-9 items-center justify-center rounded-full bg-brand-secondary text-brand-dark ring-1 ring-black/5";
-const MOBILE_ICON_BUTTON_CLASSES = "flex h-9 w-9 items-center justify-center rounded-full bg-brand-secondary text-brand-dark ring-1 ring-black/5";
+const LINK_CLASSES = "text-sm font-medium text-brand-light hover:text-brand-dark transition-colors duration-200";
+const MOBILE_LINK_CLASSES = "rounded-full px-4 py-3 text-sm font-medium text-brand-light hover:bg-brand-secondary hover:text-brand-dark transition-all";
+const ICON_BUTTON_CLASSES = "hidden md:flex h-10 w-10 items-center justify-center rounded-full bg-transparent text-brand-dark hover:bg-brand-secondary transition-all";
+const MOBILE_ICON_BUTTON_CLASSES = "flex h-10 w-10 items-center justify-center rounded-full bg-brand-secondary text-brand-dark transition-all";
 
 type NavbarProps = {
   user: User | null;
@@ -23,19 +23,29 @@ type NavbarProps = {
 
 export default function Navbar({ user }: NavbarProps) {
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const count = useCartStore((s) => s.items.reduce((sum, i) => sum + i.qty, 0));
   const userInitial = user?.email?.[0]?.toUpperCase() ?? "";
 
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <nav className="sticky top-0 z-50 border-b border-brand-primary/20 bg-white/80 backdrop-blur">
+    <nav className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? "bg-white/80 backdrop-blur-md shadow-sm border-b border-neutral-100" : "bg-transparent"}`}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-20 items-center justify-between">
           <div className="flex items-center gap-2">
-            <Link href="/" className="inline-flex items-center rounded-full bg-brand-secondary px-3 py-1 text-sm font-semibold text-brand-dark ring-1 ring-black/5">Beaulytics</Link>
+            <Link href="/" className="group inline-flex items-center gap-2">
+              {/* <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-primary text-white font-bold">B</span> */}
+              <span className="text-xl font-bold text-brand-dark tracking-tight">Beaulytics.</span>
+            </Link>
           </div>
 
           {/* Desktop Nav */}
-          <div className="hidden md:flex items-center justify-center gap-6">
+          <div className="hidden md:flex items-center justify-center gap-8">
             {NAV_ITEMS.map((item) => (
               <Link key={item.href} href={item.href} className={LINK_CLASSES}>
                 {item.label}
@@ -43,11 +53,7 @@ export default function Navbar({ user }: NavbarProps) {
             ))}
           </div>
 
-          <div className="flex items-center gap-2">
-            <button aria-label="Search" className={ICON_BUTTON_CLASSES}>
-              <SearchIcon className="h-5 w-5" />
-            </button>
-
+          <div className="flex items-center gap-3">
             {user ? (
               <Link
                 aria-label="Account"
@@ -55,28 +61,34 @@ export default function Navbar({ user }: NavbarProps) {
                 className={ICON_BUTTON_CLASSES}
                 title={user.email || "Dashboard"}
               >
-                <span className="text-sm font-semibold">{userInitial || "•"}</span>
+                <div className="h-8 w-8 rounded-full bg-brand-primary text-white flex items-center justify-center text-sm font-semibold shadow-sm">
+                  {userInitial || "•"}
+                </div>
               </Link>
             ) : (
               <Link
                 aria-label="Login"
                 href="/auth/login"
-                className="hidden md:inline-flex items-center rounded-full bg-brand-primary px-4 py-2 text-sm font-semibold text-white ring-1 ring-brand-primary/50 hover:bg-brand-primary-hover"
+                className="hidden md:inline-flex items-center rounded-full bg-brand-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800 transition-all active:scale-95"
               >
                 Login
               </Link>
             )}
 
-            <Link aria-label="Cart" href="/cart" className="hidden md:flex relative h-9 w-9 items-center justify-center rounded-full bg-brand-primary text-white ring-1 ring-brand-primary/50 hover:bg-brand-primary-hover">
+            <Link aria-label="Cart" href="/cart" className="hidden md:flex relative h-10 w-10 items-center justify-center rounded-full bg-brand-secondary text-brand-dark hover:bg-brand-secondary/80 transition-all">
               <CartIcon className="h-5 w-5" />
-              <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[10px] font-semibold text-brand-dark">{count}</span>
+              {count > 0 && (
+                <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-brand-primary px-1 text-[10px] font-bold text-white shadow-sm border border-white">
+                  {count}
+                </span>
+              )}
             </Link>
 
             <button
               aria-label="Menu"
               onClick={() => setOpen((v) => !v)}
               aria-expanded={open}
-              className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-full bg-brand-primary text-white ring-1 ring-brand-primary/50 hover:bg-brand-primary-hover"
+              className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-full bg-brand-secondary text-brand-dark"
             >
               <MenuIcon className="h-5 w-5" />
             </button>
@@ -84,41 +96,28 @@ export default function Navbar({ user }: NavbarProps) {
         </div>
 
         {/* Mobile Nav */}
-        <div className={(open ? "grid" : "hidden") + " md:hidden grid-cols-1 gap-2 border-t border-brand-primary/20 py-3"}>
-          {NAV_ITEMS.map((item) => (
-            <Link key={item.href} href={item.href} className={MOBILE_LINK_CLASSES} onClick={() => setOpen(false)}>
-              {item.label}
-            </Link>
-          ))}
-
-          <div className="mt-2 flex items-center gap-2">
-            <button aria-label="Search" className={MOBILE_ICON_BUTTON_CLASSES}>
-              <SearchIcon className="h-5 w-5" />
-            </button>
-
-            {user ? (
-              <Link
-                aria-label="Account"
-                href="/dashboard"
-                className={MOBILE_ICON_BUTTON_CLASSES}
-                title={user.email || "Dashboard"}
-              >
-                <span className="text-sm font-semibold">{userInitial || "•"}</span>
+        <div className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${open ? "max-h-96 opacity-100 mb-4" : "max-h-0 opacity-0"}`}>
+          <div className="flex flex-col space-y-2 rounded-3xl bg-neutral-50 p-4">
+            {NAV_ITEMS.map((item) => (
+              <Link key={item.href} href={item.href} className={MOBILE_LINK_CLASSES} onClick={() => setOpen(false)}>
+                {item.label}
               </Link>
-            ) : (
-              <Link
-                aria-label="Login"
-                href="/auth/login"
-                className="flex items-center rounded-full bg-brand-primary px-4 py-2 text-sm font-semibold text-white ring-1 ring-brand-primary/50 hover:bg-brand-primary-hover"
-              >
-                Login
-              </Link>
-            )}
+            ))}
 
-            <Link aria-label="Cart" href="/cart" className="flex relative h-9 w-9 items-center justify-center rounded-full bg-brand-primary text-white ring-1 ring-brand-primary/50 hover:bg-brand-primary-hover" onClick={() => setOpen(false)}>
-              <CartIcon className="h-5 w-5" />
-              <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[10px] font-semibold text-brand-dark">{count}</span>
-            </Link>
+            <div className="mt-4 flex items-center justify-between px-4 pt-4 border-t border-neutral-200">
+              {user ? (
+                <Link href="/dashboard" className="flex items-center gap-2 text-sm font-semibold text-brand-dark" onClick={() => setOpen(false)}>
+                  <div className="h-8 w-8 rounded-full bg-brand-primary text-white flex items-center justify-center">{userInitial}</div>
+                  <span>My Account</span>
+                </Link>
+              ) : (
+                <Link href="/auth/login" className="text-sm font-semibold text-brand-dark" onClick={() => setOpen(false)}>Login</Link>
+              )}
+              <Link href="/cart" className="flex items-center gap-2 text-sm font-semibold text-brand-dark" onClick={() => setOpen(false)}>
+                <CartIcon className="h-5 w-5" />
+                <span>Cart ({count})</span>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -128,7 +127,7 @@ export default function Navbar({ user }: NavbarProps) {
 
 function SearchIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="11" cy="11" r="7" />
       <line x1="21" y1="21" x2="16.65" y2="16.65" />
     </svg>
@@ -137,10 +136,10 @@ function SearchIcon({ className }: { className?: string }) {
 
 function CartIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="9" cy="20" r="1.5" />
-      <circle cx="18" cy="20" r="1.5" />
-      <path d="M2 3h3l3.6 12.5a2 2 0 0 0 2 1.5h7.4a2 2 0 0 0 2-1.6l1.3-7.9H6" />
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+      <line x1="3" y1="6" x2="21" y2="6" />
+      <path d="M16 10a4 4 0 0 1-8 0" />
     </svg>
   );
 }
@@ -148,9 +147,9 @@ function CartIcon({ className }: { className?: string }) {
 function MenuIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="3" y1="6" x2="21" y2="6" />
-      <line x1="3" y1="12" x2="21" y2="12" />
-      <line x1="3" y1="18" x2="21" y2="18" />
+      <line x1="4" y1="6" x2="20" y2="6" />
+      <line x1="4" y1="12" x2="20" y2="12" />
+      <line x1="4" y1="18" x2="20" y2="18" />
     </svg>
   );
 }

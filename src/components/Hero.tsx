@@ -1,4 +1,5 @@
 import Button from "@/components/ui/Button";
+import { Sparkles } from "lucide-react";
 
 export default function Hero() {
   return (
@@ -10,8 +11,11 @@ export default function Hero() {
             <h1 className="mt-4 text-4xl sm:text-5xl font-semibold tracking-tight text-brand-dark">Skincare modern untuk glow lembut</h1>
             <p className="mt-4 text-base sm:text-lg text-brand-light">Formula minimalis, tekstur plush, dan packaging pastel terinspirasi ritual luxury.</p>
             <div className="mt-8 flex flex-wrap items-center gap-4">
-              <Button>Shop Now</Button>
-              <Button variant="ghost">Explore New Arrivals</Button>
+              <Button href="/products">Shop Now</Button>
+              <Button variant="ai" href="/Ai">
+                <Sparkles className="mr-2 h-4 w-4" />
+                Konsultasi
+              </Button>
             </div>
           </div>
           <div className="relative">

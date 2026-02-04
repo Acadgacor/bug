@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Card from "@/components/ui/Card";
 
 interface AuthCardProps {
   title: string;
@@ -7,12 +8,15 @@ interface AuthCardProps {
 
 export default function AuthCard({ title, children }: AuthCardProps) {
   return (
-    <section className="py-12 sm:py-16">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-md rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
-          <h1 className="text-2xl font-semibold tracking-tight text-brand-dark">{title}</h1>
-          {children}
+    <section className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-neutral-50/50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-6">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold tracking-tight text-brand-dark">{title}</h1>
+          <p className="mt-2 text-sm text-brand-light">Welcome to Beaulytics</p>
         </div>
+        <Card className="p-8 shadow-xl shadow-neutral-100 border-0">
+          {children}
+        </Card>
       </div>
     </section>
   );
